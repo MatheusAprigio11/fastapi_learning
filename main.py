@@ -7,6 +7,7 @@ import json
 app = FastAPI()
 
 times = {
+    
     1: {
     "time": "São Paulo",
     "pontos": 28,
@@ -70,9 +71,42 @@ async def delete_time(time_id: int):
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Esse time não existe.")
 
+def buscar_dados():
+
+    url = 'https://api.api-futebol.com.br/v1/campeonatos/10/tabela'
+    headers = {
+        'Authorization': f'Bearer live_170a3c7147b1b1a86220ce0924c9b7'
+    }
+
+    response = requests.get(url, headers=headers)
+
+    data = response.json()
+
+    posicoes = []
+    
+    for p in range(20):
+        posicoes.append(data[p])
+    
+    for time in posicoes:
+        times = {
+            time: {
+            "posicao": time,
+            "time": time['time']['nome_popular'],
+            "pontos": time['pontos'],
+            "vitorias": time['vitorias']
+            },
+        }
+        print(times.json())
+
+    print(response)
+    print(data[13]['time']['nome_popular'])
+    print(data[13]['pontos'])
+    
+
 
 if __name__ =='__main__':
-    uvicorn.run("main:app", host='0.0.0.0', port=8000, reload=True)
+    buscar_dados()
+    # uvicorn.run("main:app", host='0.0.0.0', port=8000, reload=True)
 
 
 
@@ -80,12 +114,8 @@ if __name__ =='__main__':
 
 
 
-# def buscar_dados():
-#     request = requests.get("http://localhost:3002/api/todo")
-#     todos = json.loads(request.content)
-#     print(todos)
-#     print(todos[0]['titulo'])
+
 
 # if __name__ == '__main__':
 #     buscar_dados()
-#     https://www.treinaweb.com.br/blog/consumindo-apis-com-python-parte-1#:~:text=Conclus%C3%A3o,ser%C3%A1%20utilizado%20para%20esta%20requisi%C3%A7%C3%A3o.
+#     
