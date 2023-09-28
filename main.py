@@ -2,25 +2,54 @@ from fastapi import FastAPI, HTTPException, status, Response
 import uvicorn
 import requests
 import json
+from models import Time
 
 
 app = FastAPI()
 
-times = {
-    
-    1: {
-    "time": "São Paulo",
-    "pontos": 28,
-    "posicao": 13,
-    "vitorias": 7
-    },
-    2: {
-    "time": "Botafogo",
-    "pontos": 51,
-    "posicao": 1,
-    "vitorias": 16
+times = {}
+
+def buscar_dados():
+
+    url = 'https://api.api-futebol.com.br/v1/campeonatos/10/tabela'
+    headers = {
+        'Authorization': f'Bearer live_170a3c7147b1b1a86220ce0924c9b7'
     }
-}
+
+    response = requests.get(url, headers=headers)
+
+    data = response.json()
+  # Dicionário para armazenar os detalhes de todos os times
+
+    for p in range(20):
+        time_data = data[p]
+
+        nome_popular = time_data['time']['nome_popular']
+
+        time = {
+            'posicao': time_data['posicao'],
+            'pontos': time_data['pontos'],
+            'vitorias': time_data['vitorias']
+        }
+
+        times[nome_popular] = time  # Use o nome popular como chave
+
+    return times
+        
+
+    print(response)
+
+
+
+
+
+def minha_api(api):
+
+   
+    print(times)
+    return times
+
+buscar_dados()
 
 @app.get('/times')
 async def get_times():
@@ -70,43 +99,15 @@ async def delete_time(time_id: int):
         return Response(status_code= status.HTTP_204_NO_CONTENT)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Esse time não existe.")
-
-def buscar_dados():
-
-    url = 'https://api.api-futebol.com.br/v1/campeonatos/10/tabela'
-    headers = {
-        'Authorization': f'Bearer live_170a3c7147b1b1a86220ce0924c9b7'
-    }
-
-    response = requests.get(url, headers=headers)
-
-    data = response.json()
-
-    posicoes = []
     
-    for p in range(20):
-        posicoes.append(data[p])
-    
-    for time in posicoes:
-        times = {
-            time: {
-            "posicao": time,
-            "time": time['time']['nome_popular'],
-            "pontos": time['pontos'],
-            "vitorias": time['vitorias']
-            },
-        }
-        print(times.json())
 
-    print(response)
-    print(data[13]['time']['nome_popular'])
-    print(data[13]['pontos'])
-    
+
+
+
 
 
 if __name__ =='__main__':
-    buscar_dados()
-    # uvicorn.run("main:app", host='0.0.0.0', port=8000, reload=True)
+    uvicorn.run("main:app", host='127.0.0.1', port=8000, reload=True)
 
 
 
